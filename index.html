@@ -1,0 +1,1247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>rankthebot — Track Your Brand in AI Responses</title>
+  <meta name="description" content="Open-source CLI tool that scans ChatGPT queries, scores your brand's AI visibility 0–100, and benchmarks competitors. Run from your terminal in minutes." />
+  <meta property="og:title" content="rankthebot — Track Your Brand in AI Responses" />
+  <meta property="og:description" content="Scan ChatGPT queries, score AI visibility, benchmark competitors. Free and open-source CLI." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://rankthebot.com" />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <!-- Favicon: refined chat bubble logo -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 36 36'%3E%3Crect width='36' height='36' rx='9' fill='%23c46849'/%3E%3Crect x='3.5' y='3.5' width='29' height='21' rx='4.5' fill='white'/%3E%3Cpath d='M10 23.5 L5 32 L19 23.5 Z' fill='white'/%3E%3Crect x='8.5' y='9' width='18' height='2.5' rx='1.25' fill='%23c46849'/%3E%3Crect x='8.5' y='14' width='13' height='2.5' rx='1.25' fill='%23c46849' opacity='0.5'/%3E%3Crect x='8.5' y='19' width='8' height='2.5' rx='1.25' fill='%23c46849' opacity='0.27'/%3E%3C/svg%3E" />
+
+  <script src="https://f.convertkit.com/ckjs/ck.5.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Lora:wght@600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #100e0c;
+      --surface:  #181410;
+      --card:     #1e1914;
+      --card-2:   #251f18;
+      --border:   #2c2119;
+      --border-2: #3d2e22;
+      --terra:    #c46849;
+      --terra-lt: #d4835f;
+      --terra-dk: #a8533a;
+      --sand:     #e8c49a;
+      --sand-lt:  #f5dfc0;
+      --green:    #5a9e6f;
+      --text:     #f5ece3;
+      --text-2:   #c4ae9b;
+      --muted:    #7a6456;
+      --muted-2:  #4a3a2e;
+      --radius:   10px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 16px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* ─── SUBTLE GRAIN ─── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ─── WARM GLOW ─── */
+    .glow-bg {
+      position: fixed;
+      top: -30vh;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 800px;
+      height: 600px;
+      background: radial-gradient(ellipse at 50% 40%, rgba(196,104,73,.07) 0%, transparent 65%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ─── LAYOUT ─── */
+    .container {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 0 28px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ─── NAV ─── */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: transparent;
+      border-bottom: 1px solid transparent;
+      transition: background .3s ease, border-color .3s ease;
+    }
+
+    nav.scrolled {
+      background: rgba(16,14,12,.92);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom-color: var(--border);
+    }
+
+    .nav-inner {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 0 28px;
+      height: 62px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      text-decoration: none;
+      color: var(--text);
+    }
+
+    /* ─── LOGO ICON ─── */
+    .logo-icon { flex-shrink: 0; }
+
+    .logo-text {
+      font-size: 1rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      color: var(--text);
+    }
+
+    .logo-text .the {
+      color: var(--muted);
+      font-weight: 400;
+    }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* ─── BUTTONS ─── */
+    .btn-ghost {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 7px 15px;
+      border-radius: 7px;
+      border: 1px solid var(--border-2);
+      background: transparent;
+      color: var(--text-2);
+      font-size: 0.875rem;
+      font-weight: 500;
+      text-decoration: none;
+      cursor: pointer;
+      transition: background .15s, color .15s, border-color .15s;
+      font-family: inherit;
+    }
+
+    .btn-ghost:hover {
+      background: var(--card);
+      color: var(--text);
+      border-color: var(--border-2);
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 8px 18px;
+      border-radius: 7px;
+      background: var(--terra);
+      color: #fff;
+      font-size: 0.875rem;
+      font-weight: 600;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      transition: background .15s, transform .15s;
+      font-family: inherit;
+    }
+
+    .btn-primary:hover {
+      background: var(--terra-lt);
+      transform: translateY(-1px);
+    }
+
+    .btn-large       { padding: 13px 28px; font-size: 1rem; }
+    .btn-ghost-large { padding: 12px 24px; font-size: 1rem; }
+
+    /* ─── HERO ─── */
+    .hero {
+      padding: 110px 0 90px;
+      text-align: center;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 14px 5px 10px;
+      border-radius: 100px;
+      border: 1px solid var(--border-2);
+      background: var(--card);
+      color: var(--terra-lt);
+      font-size: 0.78rem;
+      font-weight: 500;
+      letter-spacing: .01em;
+      margin-bottom: 32px;
+    }
+
+    .badge-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--terra);
+      animation: pulse 2.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: .35; transform: scale(.75); }
+    }
+
+    .hero h1 {
+      font-family: 'Lora', Georgia, serif;
+      font-size: clamp(2.5rem, 6vw, 4.4rem);
+      font-weight: 700;
+      letter-spacing: -0.025em;
+      line-height: 1.08;
+      margin-bottom: 26px;
+      max-width: 840px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .hero h1 em {
+      font-style: italic;
+      color: var(--terra-lt);
+    }
+
+    .hero-sub {
+      font-size: clamp(1rem, 2vw, 1.15rem);
+      color: var(--text-2);
+      max-width: 520px;
+      margin: 0 auto 48px;
+      line-height: 1.7;
+    }
+
+    .hero-actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 60px;
+    }
+
+    /* ─── INSTALL BLOCK ─── */
+    .install-block {
+      display: inline-flex;
+      align-items: center;
+      border-radius: var(--radius);
+      border: 1px solid var(--border-2);
+      background: var(--surface);
+      overflow: hidden;
+      margin-bottom: 60px;
+      max-width: 100%;
+    }
+
+    .install-label {
+      padding: 11px 16px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.78rem;
+      color: var(--green);
+      white-space: nowrap;
+      border-right: 1px solid var(--border);
+    }
+
+    .install-cmd {
+      padding: 11px 20px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.82rem;
+      color: var(--text-2);
+      white-space: nowrap;
+      overflow: auto;
+    }
+
+    .install-copy {
+      padding: 11px 16px;
+      border: none;
+      border-left: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      transition: background .15s, color .15s;
+      font-size: 0.78rem;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-family: inherit;
+      white-space: nowrap;
+    }
+
+    .install-copy:hover { background: var(--card); color: var(--text); }
+    .install-copy.copied { color: var(--green); }
+
+    /* ─── DIVIDER ─── */
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 0;
+    }
+
+    /* ─── STATS STRIP ─── */
+    .stats { padding: 0 0 80px; }
+
+    .stats-inner {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+
+    .stat-item {
+      background: var(--card);
+      padding: 30px 24px;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-family: 'Lora', Georgia, serif;
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--terra-lt);
+      line-height: 1;
+      margin-bottom: 8px;
+      letter-spacing: -0.02em;
+    }
+
+    .stat-label {
+      font-size: 0.8rem;
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    /* ─── SECTIONS ─── */
+    section { padding: 88px 0; }
+
+    .section-eyebrow {
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--terra);
+      margin-bottom: 16px;
+    }
+
+    .section-title {
+      font-family: 'Lora', Georgia, serif;
+      font-size: clamp(1.7rem, 3.5vw, 2.5rem);
+      font-weight: 700;
+      letter-spacing: -0.025em;
+      line-height: 1.15;
+      margin-bottom: 18px;
+    }
+
+    .section-sub {
+      font-size: 1.05rem;
+      color: var(--text-2);
+      max-width: 520px;
+      line-height: 1.7;
+    }
+
+    /* ─── HOW IT WORKS ─── */
+    .hiw-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+      margin-top: 56px;
+    }
+
+    .hiw-step {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 34px 28px;
+      transition: border-color .2s;
+    }
+
+    .hiw-step:hover { border-color: var(--border-2); }
+
+    .step-number {
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 22px;
+    }
+
+    .step-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+      font-size: 1.25rem;
+      background: var(--card-2);
+      border: 1px solid var(--border);
+    }
+
+    .hiw-step h3 {
+      font-size: 1rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      margin-bottom: 10px;
+    }
+
+    .hiw-step p {
+      font-size: 0.88rem;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .hiw-step .cmd {
+      margin-top: 20px;
+      padding: 10px 13px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.76rem;
+      color: var(--sand);
+    }
+
+    .hiw-step .cmd .prompt { color: var(--muted-2); margin-right: 6px; }
+
+    /* ─── FEATURES ─── */
+    .features-bg {
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 18px;
+      margin-top: 56px;
+    }
+
+    .feature-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 34px;
+      transition: border-color .2s, transform .2s;
+    }
+
+    .feature-card:hover {
+      border-color: var(--border-2);
+      transform: translateY(-2px);
+    }
+
+    .feature-icon {
+      width: 46px;
+      height: 46px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.35rem;
+      margin-bottom: 20px;
+      background: var(--card-2);
+      border: 1px solid var(--border);
+    }
+
+    .feature-card h3 {
+      font-size: 1.05rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      margin-bottom: 10px;
+    }
+
+    .feature-card p {
+      font-size: 0.88rem;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .feature-tag {
+      display: inline-block;
+      margin-top: 18px;
+      padding: 3px 10px;
+      border-radius: 100px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      background: var(--card-2);
+      border: 1px solid var(--border-2);
+      color: var(--text-2);
+    }
+
+    /* ─── QUICK START ─── */
+    .qs-layout {
+      display: grid;
+      grid-template-columns: 1fr 1.6fr;
+      gap: 56px;
+      align-items: start;
+      margin-top: 56px;
+    }
+
+    .qs-steps { display: flex; flex-direction: column; gap: 8px; }
+
+    .qs-step-btn {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 13px 16px;
+      border-radius: 9px;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--muted);
+      font-family: inherit;
+      font-size: 0.88rem;
+      font-weight: 500;
+      cursor: pointer;
+      text-align: left;
+      transition: all .15s;
+      width: 100%;
+    }
+
+    .qs-step-btn:hover { background: var(--card); color: var(--text-2); }
+
+    .qs-step-btn.active {
+      background: var(--card);
+      border-color: var(--border-2);
+      color: var(--text);
+    }
+
+    .qs-step-num {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: 1.5px solid var(--border-2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      font-weight: 700;
+      flex-shrink: 0;
+      color: var(--muted);
+      transition: all .15s;
+    }
+
+    .qs-step-btn.active .qs-step-num {
+      background: var(--terra);
+      border-color: transparent;
+      color: #fff;
+    }
+
+    .qs-terminal {
+      background: #0c0a08;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .terminal-bar {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 11px 16px;
+      border-bottom: 1px solid var(--border);
+      background: #111009;
+    }
+
+    .terminal-dot { width: 10px; height: 10px; border-radius: 50%; }
+    .td-red    { background: #ff5f57; }
+    .td-yellow { background: #febc2e; }
+    .td-green  { background: #28c840; }
+
+    .terminal-title {
+      margin-left: 8px;
+      font-size: 0.72rem;
+      color: var(--muted);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .terminal-body { padding: 24px; }
+    .terminal-panel { display: none; }
+    .terminal-panel.active { display: block; }
+
+    .t-line {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 7px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      line-height: 1.6;
+    }
+
+    .t-line:last-child { margin-bottom: 0; }
+    .t-prompt  { color: #5a9e6f; flex-shrink: 0; }
+    .t-cmd     { color: #e8ddd5; }
+    .t-comment { color: #3d3028; font-size: 0.75rem; }
+    .t-out     { color: #7a6456; padding-left: 20px; }
+    .t-success { color: #5a9e6f; padding-left: 20px; }
+    .t-score   { color: #c46849; padding-left: 20px; font-weight: 500; }
+
+    /* ─── NEWSLETTER ─── */
+    .newsletter {
+      padding: 0 0 88px;
+    }
+
+    .nl-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 52px 48px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 48px;
+      align-items: center;
+    }
+
+    .nl-eyebrow {
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--terra);
+      margin-bottom: 14px;
+    }
+
+    .nl-title {
+      font-family: 'Lora', Georgia, serif;
+      font-size: clamp(1.4rem, 2.5vw, 1.9rem);
+      font-weight: 700;
+      letter-spacing: -0.025em;
+      line-height: 1.2;
+      margin-bottom: 12px;
+    }
+
+    .nl-sub {
+      font-size: 0.92rem;
+      color: var(--text-2);
+      line-height: 1.7;
+    }
+
+    .nl-form {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .nl-row {
+      display: flex;
+      gap: 10px;
+    }
+
+    .nl-input {
+      flex: 1;
+      padding: 11px 16px;
+      background: var(--bg);
+      border: 1px solid var(--border-2);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color .15s;
+      min-width: 0;
+    }
+
+    .nl-input::placeholder { color: var(--muted); }
+
+    .nl-input:focus {
+      border-color: var(--terra);
+    }
+
+    .nl-btn {
+      padding: 11px 22px;
+      background: var(--terra);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background .15s, transform .15s;
+    }
+
+    .nl-btn:hover {
+      background: var(--terra-lt);
+      transform: translateY(-1px);
+    }
+
+    .nl-note {
+      font-size: 0.76rem;
+      color: var(--muted);
+    }
+
+    .nl-note a {
+      color: var(--muted);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .nl-success {
+      display: none;
+      padding: 14px 18px;
+      background: rgba(90,158,111,.1);
+      border: 1px solid rgba(90,158,111,.25);
+      border-radius: 8px;
+      color: var(--green);
+      font-size: 0.88rem;
+      font-weight: 500;
+    }
+
+    @media (max-width: 768px) {
+      .nl-box { grid-template-columns: 1fr; gap: 28px; padding: 36px 24px; }
+      .nl-row  { flex-direction: column; }
+      .nl-btn  { width: 100%; justify-content: center; }
+    }
+
+    /* ─── CTA ─── */
+    .cta-section {
+      padding: 80px 0 110px;
+      text-align: center;
+    }
+
+    .cta-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 64px 48px;
+      max-width: 660px;
+      margin: 0 auto;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .cta-box::before {
+      content: '';
+      position: absolute;
+      top: -60px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 360px;
+      height: 240px;
+      background: radial-gradient(ellipse, rgba(196,104,73,.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .cta-box h2 {
+      font-family: 'Lora', Georgia, serif;
+      font-size: clamp(1.7rem, 4vw, 2.3rem);
+      font-weight: 700;
+      letter-spacing: -0.025em;
+      margin-bottom: 16px;
+      position: relative;
+    }
+
+    .cta-box h2 em {
+      font-style: italic;
+      color: var(--terra-lt);
+    }
+
+    .cta-box p {
+      color: var(--text-2);
+      margin-bottom: 36px;
+      font-size: 1.05rem;
+      line-height: 1.65;
+      position: relative;
+    }
+
+    .cta-btns {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      position: relative;
+    }
+
+    /* ─── FOOTER ─── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 36px 0;
+    }
+
+    .footer-inner {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 0 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .footer-left { display: flex; align-items: center; gap: 10px; }
+    .footer-copy { font-size: 0.82rem; color: var(--muted); }
+
+    .footer-links { display: flex; align-items: center; gap: 22px; }
+
+    .footer-links a {
+      font-size: 0.82rem;
+      color: var(--muted);
+      text-decoration: none;
+      transition: color .15s;
+    }
+
+    .footer-links a:hover { color: var(--text-2); }
+
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 768px) {
+      .stats-inner      { grid-template-columns: repeat(2, 1fr); }
+      .hiw-grid         { grid-template-columns: 1fr; }
+      .features-grid    { grid-template-columns: 1fr; }
+      .qs-layout        { grid-template-columns: 1fr; gap: 28px; }
+      .nav-right .btn-ghost { display: none; }
+      .hero             { padding: 70px 0 56px; }
+      .cta-box          { padding: 44px 28px; }
+    }
+
+    @media (max-width: 480px) {
+      .stat-item  { padding: 22px 14px; }
+      .stat-value { font-size: 1.6rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="glow-bg"></div>
+
+  <!-- ─── NAV ─── -->
+  <nav id="nav">
+    <div class="nav-inner">
+      <a href="/" class="logo">
+        <!--
+          Logo: speech bubble (AI chat) with a ranked list inside.
+          Terracotta square → white bubble → terracotta lines (long, medium, short).
+          Represents: finding your brand in chatbot responses, ranked first.
+        -->
+        <svg class="logo-icon" width="34" height="34" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Terracotta background, rounded -->
+          <rect width="36" height="36" rx="9" fill="#c46849"/>
+          <!-- Bubble body — fills the square with balanced padding -->
+          <rect x="3.5" y="3.5" width="29" height="21" rx="4.5" fill="white"/>
+          <!-- Tail overlaps body by 1px so the join is seamless -->
+          <path d="M10 23.5 L5 32 L19 23.5 Z" fill="white"/>
+          <!-- Ranked list: long = #1, medium = #2, short = #3 -->
+          <rect x="8.5" y="9"  width="18" height="2.5" rx="1.25" fill="#c46849"/>
+          <rect x="8.5" y="14" width="13" height="2.5" rx="1.25" fill="#c46849" opacity="0.5"/>
+          <rect x="8.5" y="19" width="8"  height="2.5" rx="1.25" fill="#c46849" opacity="0.27"/>
+        </svg>
+        <span class="logo-text">rank<span class="the">the</span>bot</span>
+      </a>
+
+      <div class="nav-right">
+        <a href="https://github.com/nikkos/rankthebot" target="_blank" rel="noopener" class="btn-ghost">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.02 10.02 0 0 0 22 12.017C22 6.484 17.522 2 12 2z"/></svg>
+          GitHub
+        </a>
+        <a href="#quickstart" class="btn-primary">
+          Get started
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ─── HERO ─── -->
+  <section class="hero">
+    <div class="container">
+      <div class="badge">
+        <span class="badge-dot"></span>
+        Open Source · MIT License · v0.1
+      </div>
+
+      <h1>
+        Know where your brand<br />
+        stands in <em>AI responses</em>
+      </h1>
+
+      <p class="hero-sub">
+        rankthebot scans ChatGPT with hundreds of real queries, scores your brand's visibility 0–100, and shows you exactly how you stack up against competitors — from your terminal.
+      </p>
+
+      <div class="install-block">
+        <span class="install-label">$</span>
+        <span class="install-cmd">git clone https://github.com/nikkos/rankthebot.git &amp;&amp; pip3 install -e rankthebot/</span>
+        <button class="install-copy" onclick="copyInstall()" id="copy-btn">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          Copy
+        </button>
+      </div>
+
+      <div class="hero-actions">
+        <a href="#quickstart" class="btn-primary btn-large">Quick start guide</a>
+        <a href="https://github.com/nikkos/rankthebot" target="_blank" rel="noopener" class="btn-ghost btn-ghost-large">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.02 10.02 0 0 0 22 12.017C22 6.484 17.522 2 12 2z"/></svg>
+          View on GitHub
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── STATS ─── -->
+  <div class="stats">
+    <div class="container">
+      <div class="stats-inner">
+        <div class="stat-item">
+          <div class="stat-value">0–100</div>
+          <div class="stat-label">Visibility score</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">65+</div>
+          <div class="stat-label">Queries per scan</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">~$1</div>
+          <div class="stat-label">Cost per full scan</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">100%</div>
+          <div class="stat-label">Local — no data shared</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── HOW IT WORKS ─── -->
+  <section>
+    <div class="container">
+      <p class="section-eyebrow">How it works</p>
+      <h2 class="section-title">Three commands to your<br />AI visibility score</h2>
+      <p class="section-sub">rankthebot handles query expansion, multi-run scanning, and weighted scoring automatically. You just read the results.</p>
+
+      <div class="hiw-grid">
+        <div class="hiw-step">
+          <div class="step-number">Step 01</div>
+          <div class="step-icon">🔑</div>
+          <h3>Connect your API key</h3>
+          <p>Authenticate with your OpenAI key. It stays local in <code style="font-family:'JetBrains Mono',monospace;font-size:.8em;color:var(--text-2)">~/.rankthebot/config.json</code> — never sent anywhere else.</p>
+          <div class="cmd"><span class="prompt">$</span> rankthebot auth connect --openai</div>
+        </div>
+
+        <div class="hiw-step">
+          <div class="step-number">Step 02</div>
+          <div class="step-icon">🔍</div>
+          <h3>Expand your query set</h3>
+          <p>Provide one topic, get dozens of query variants across 4 user personas — small business owner, developer, enterprise buyer, and agency.</p>
+          <div class="cmd"><span class="prompt">$</span> rankthebot queries expand "CRM software"</div>
+        </div>
+
+        <div class="hiw-step">
+          <div class="step-number">Step 03</div>
+          <div class="step-icon">📊</div>
+          <h3>Scan & get your score</h3>
+          <p>Runs 3× per query to account for LLM variability, extracts brand mentions with position and sentiment, and produces a 0–100 score.</p>
+          <div class="cmd"><span class="prompt">$</span> rankthebot report visibility --brand "acme"</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── FEATURES ─── -->
+  <section class="features-bg">
+    <div class="container">
+      <p class="section-eyebrow">Features</p>
+      <h2 class="section-title">Everything you need to<br />track AI search presence</h2>
+      <p class="section-sub">Built for marketers, SEOs, and growth teams who need to understand the AI search landscape before their competitors do.</p>
+
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">🧠</div>
+          <h3>Smart query expansion</h3>
+          <p>Turn a single keyword into 65+ real-world ChatGPT queries. rankthebot simulates how actual buyers phrase questions — across industries, roles, and intents — so you see the full picture, not just one angle.</p>
+          <span class="feature-tag">GPT-4o powered</span>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">🔄</div>
+          <h3>Multi-run scanning</h3>
+          <p>AI responses are non-deterministic. Running each query 3 times and averaging results gives you a statistically reliable visibility score — not a fluke snapshot that changes on the next refresh.</p>
+          <span class="feature-tag">3× per query</span>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">📈</div>
+          <h3>Position-weighted scoring</h3>
+          <p>Not all mentions are equal. A first-position mention scores highest; each subsequent position decays by ~18%. The 0–100 score reflects how prominently — and how early — your brand appears.</p>
+          <span class="feature-tag">0–100 score</span>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">🏆</div>
+          <h3>Competitor benchmarking</h3>
+          <p>See every brand that appears in your query set, ranked by AI visibility. Identify which competitors dominate AI responses and find the gaps you can win. Export to CSV for Google Sheets.</p>
+          <span class="feature-tag">CSV export</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── QUICK START ─── -->
+  <section id="quickstart">
+    <div class="container">
+      <p class="section-eyebrow">Quick start</p>
+      <h2 class="section-title">Up and running in minutes</h2>
+      <p class="section-sub">Requires Python 3.9+ and an OpenAI API key. Works on Mac, Linux, and Windows (WSL).</p>
+
+      <div class="qs-layout">
+        <div class="qs-steps">
+          <button class="qs-step-btn active" onclick="showPanel(0)" data-step="0">
+            <span class="qs-step-num">1</span>
+            Install rankthebot
+          </button>
+          <button class="qs-step-btn" onclick="showPanel(1)" data-step="1">
+            <span class="qs-step-num">2</span>
+            Connect your API key
+          </button>
+          <button class="qs-step-btn" onclick="showPanel(2)" data-step="2">
+            <span class="qs-step-num">3</span>
+            Expand queries
+          </button>
+          <button class="qs-step-btn" onclick="showPanel(3)" data-step="3">
+            <span class="qs-step-num">4</span>
+            Run a scan
+          </button>
+          <button class="qs-step-btn" onclick="showPanel(4)" data-step="4">
+            <span class="qs-step-num">5</span>
+            View your score
+          </button>
+        </div>
+
+        <div class="qs-terminal">
+          <div class="terminal-bar">
+            <span class="terminal-dot td-red"></span>
+            <span class="terminal-dot td-yellow"></span>
+            <span class="terminal-dot td-green"></span>
+            <span class="terminal-title">rankthebot — zsh</span>
+          </div>
+          <div class="terminal-body">
+
+            <div class="terminal-panel active" id="panel-0">
+              <div class="t-line"><span class="t-prompt">$</span><span class="t-cmd">git clone https://github.com/nikkos/rankthebot.git</span></div>
+              <div class="t-line"><span class="t-out">Cloning into 'rankthebot'...</span></div>
+              <div class="t-line"><span class="t-out">remote: Enumerating objects: 142, done.</span></div>
+              <div class="t-line" style="margin-bottom:16px"><span class="t-success">✓ Done.</span></div>
+              <div class="t-line"><span class="t-prompt">$</span><span class="t-cmd">cd rankthebot &amp;&amp; pip3 install -e .</span></div>
+              <div class="t-line"><span class="t-out">Installing dependencies...</span></div>
+              <div class="t-line" style="margin-bottom:16px"><span class="t-success">✓ rankthebot installed successfully.</span></div>
+              <div class="t-line"><span class="t-prompt">$</span><span class="t-cmd">rankthebot --help</span></div>
+              <div class="t-line"><span class="t-success">✓ Ready. Run rankthebot auth connect --openai to begin.</span></div>
+            </div>
+
+            <div class="terminal-panel" id="panel-1">
+              <div class="t-line"><span class="t-prompt">$</span><span class="t-cmd">rankthebot auth connect --openai</span></div>
+              <div class="t-line"><span class="t-out">Enter your OpenAI API key:</span></div>
+              <div class="t-line"><span class="t-cmd">sk-••••••••••••••••••••••••••••••••</span></div>
+              <div class="t-line" style="margin-bottom:16px"></div>
+              <div class="t-line"><span class="t-success">✓ API key saved to ~/.rankthebot/config.json</span></div>
+              <div class="t-line"><span class="t-success">✓ Connection verified — GPT-4o is reachable.</span></div>
+              <div class="t-line" style="margin-top:12px"><span class="t-comment"># Key stored locally — never committed to git</span></div>
+            </div>
+
+            <div class="terminal-panel" id="panel-2">
+              <div class="t-line"><span class="t-prompt">$</span><span class="t-cmd">rankthebot queries expand "CRM software"</span></div>
+              <div class="t-line"><span class="t-out">Generating query variants...</span></div>
+              <div class="t-line" style="margin-bottom:16px"></div>
+              <div class="t-line"><span class="t-success">✓ 65 queries generated across 4 personas:</span></div>
+              <div class="t-line"><span class="t-out">&nbsp;&nbsp;• 18 queries — Small business owner</span></div>
+              <div class="t-line"><span class="t-out">&nbsp;&nbsp;• 15 queries — Developer</span></div>
+              <div class="t-line"><span class="t-out">&nbsp;&nbsp;• 17 queries — Enterprise buyer</span></div>
+              <div class="t-line"><span class="t-out">&nbsp;&nbsp;• 15 queries — Agency</span></div>
+              <div class="t-line" style="margin-top:12px"><span class="t-comment"># Run 'rankthebot scan --dry-run' to preview</span></div>
+            </div>
+
+            <div class="terminal-panel" id="panel-3">
+              <div class="t-line"><span class="t-prompt">$</span><span class="t-cmd">rankthebot scan</span></div>
+              <div class="t-line"><span class="t-out">Scanning 65 queries × 3 runs = 195 total requests...</span></div>
+              <div class="t-line"><span class="t-out">Using GPT-4o for responses, GPT-4o-mini for extraction.</span></div>
+              <div class="t-line" style="margin-bottom:16px"></div>
+              <div class="t-line"><span class="t-out">&nbsp;[██████████████████░░░░░] 78% — query 51/65</span></div>
+              <div class="t-line" style="margin-bottom:16px"></div>
+              <div class="t-line"><span class="t-success">✓ Scan complete. Estimated cost: $1.12</span></div>
+              <div class="t-line"><span class="t-success">✓ Results stored in local SQLite database.</span></div>
+            </div>
+
+            <div class="terminal-panel" id="panel-4">
+              <div class="t-line"><span class="t-prompt">$</span><span class="t-cmd">rankthebot report visibility --brand "hubspot"</span></div>
+              <div class="t-line" style="margin-bottom:16px"></div>
+              <div class="t-line"><span class="t-score">  AI Visibility Score: 74 / 100</span></div>
+              <div class="t-line"><span class="t-out">  Mentioned in: 48 / 65 queries</span></div>
+              <div class="t-line"><span class="t-out">  Avg position: 1.8  |  Sentiment: +0.62</span></div>
+              <div class="t-line" style="margin-bottom:16px"></div>
+              <div class="t-line"><span class="t-prompt">$</span><span class="t-cmd">rankthebot report competitors --output results.csv</span></div>
+              <div class="t-line"><span class="t-success">✓ Competitor report saved to results.csv</span></div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── NEWSLETTER ─── -->
+  <div class="newsletter">
+    <div class="container">
+      <div class="nl-box">
+        <div>
+          <p class="nl-eyebrow">Stay in the loop</p>
+          <h2 class="nl-title">AI search is moving fast.<br />Don't fall behind.</h2>
+          <p class="nl-sub">Get monthly updates on rankthebot releases, AI visibility benchmarks, and practical tips to improve how your brand appears in ChatGPT responses.</p>
+        </div>
+        <div>
+          <!--
+            SETUP: Sign up at kit.com (free up to 10k subscribers).
+            Create a form → copy the form action URL → replace the action below.
+            The name attribute "email_address" is what Kit expects.
+          -->
+          <form
+            class="nl-form"
+            action="https://app.kit.com/forms/9115094/subscriptions"
+            method="post"
+            onsubmit="handleSubscribe(event)"
+          >
+            <div class="nl-row">
+              <input
+                class="nl-input"
+                type="email"
+                name="email_address"
+                placeholder="you@company.com"
+                required
+                autocomplete="email"
+              />
+              <button class="nl-btn" type="submit">Subscribe</button>
+            </div>
+            <p class="nl-note">No spam, ever. Unsubscribe any time.</p>
+            <div class="nl-success" id="nl-success">
+              ✓ You're in — check your inbox to confirm.
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── CTA ─── -->
+  <section class="cta-section">
+    <div class="container">
+      <div class="cta-box">
+        <h2>Start tracking your<br /><em>AI visibility today</em></h2>
+        <p>Free, open-source, and runs entirely on your machine.<br />Your API key and data never leave your computer.</p>
+        <div class="cta-btns">
+          <a href="https://github.com/nikkos/rankthebot" target="_blank" rel="noopener" class="btn-primary btn-large">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.02 10.02 0 0 0 22 12.017C22 6.484 17.522 2 12 2z"/></svg>
+            Clone on GitHub
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── FOOTER ─── -->
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-left">
+        <svg width="22" height="22" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="36" height="36" rx="9" fill="#c46849"/>
+          <rect x="3.5" y="3.5" width="29" height="21" rx="4.5" fill="white"/>
+          <path d="M10 23.5 L5 32 L19 23.5 Z" fill="white"/>
+          <rect x="8.5" y="9"  width="18" height="2.5" rx="1.25" fill="#c46849"/>
+          <rect x="8.5" y="14" width="13" height="2.5" rx="1.25" fill="#c46849" opacity="0.5"/>
+          <rect x="8.5" y="19" width="8"  height="2.5" rx="1.25" fill="#c46849" opacity="0.27"/>
+        </svg>
+        <span class="footer-copy">© 2026 rankthebot · MIT License · Made by Nikos Lamprakakis</span>
+      </div>
+      <div class="footer-links">
+        <a href="https://github.com/nikkos/rankthebot" target="_blank" rel="noopener">GitHub</a>
+        <a href="https://github.com/nikkos/rankthebot/issues" target="_blank" rel="noopener">Issues</a>
+        <a href="https://github.com/nikkos/rankthebot/blob/main/LICENSE" target="_blank" rel="noopener">License</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Nav: transparent at top, appears on scroll
+    const nav = document.getElementById('nav');
+    window.addEventListener('scroll', () => {
+      nav.classList.toggle('scrolled', window.scrollY > 20);
+    }, { passive: true });
+
+    // Copy install command
+    function copyInstall() {
+      const cmd = 'git clone https://github.com/nikkos/rankthebot.git && pip3 install -e rankthebot/';
+      navigator.clipboard.writeText(cmd).then(() => {
+        const btn = document.getElementById('copy-btn');
+        btn.classList.add('copied');
+        btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Copied!`;
+        setTimeout(() => {
+          btn.classList.remove('copied');
+          btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy`;
+        }, 2000);
+      });
+    }
+
+    // Newsletter form — posts to Kit, shows inline confirmation
+    function handleSubscribe(e) {
+      e.preventDefault();
+      const form = e.target;
+      const data = new FormData(form);
+      fetch(form.action, { method: 'POST', body: data, headers: { Accept: 'application/json' } })
+        .then(() => {
+          form.querySelector('.nl-row').style.display = 'none';
+          form.querySelector('.nl-note').style.display = 'none';
+          document.getElementById('nl-success').style.display = 'block';
+        })
+        .catch(() => { form.submit(); }); // fallback: native POST redirect
+    }
+
+    // Quick start tabs
+    function showPanel(idx) {
+      document.querySelectorAll('.terminal-panel').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.qs-step-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('panel-' + idx).classList.add('active');
+      document.querySelector('[data-step="' + idx + '"]').classList.add('active');
+    }
+  </script>
+
+</body>
+</html>
