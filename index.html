@@ -958,8 +958,8 @@
           <div class="stat-label">Queries per scan</div>
         </div>
         <div class="stat-item">
-          <div class="stat-value">2</div>
-          <div class="stat-label">AI models — ChatGPT &amp; Claude</div>
+          <div class="stat-value">~$1</div>
+          <div class="stat-label">Cost per full scan</div>
         </div>
         <div class="stat-item">
           <div class="stat-value">100%</div>
@@ -981,8 +981,8 @@
           <div class="step-number">Step 01</div>
           <div class="step-icon">🔑</div>
           <h3>Connect your API key</h3>
-          <p>Authenticate with your OpenAI or Anthropic key. Keys stay local in <code style="font-family:'JetBrains Mono',monospace;font-size:.8em;color:var(--text-2)">~/.rankthebot/config.json</code> — never sent anywhere else.</p>
-          <div class="cmd"><span class="prompt">$</span> rankthebot auth connect --openai<br /><span class="prompt">$</span> rankthebot auth connect --anthropic</div>
+          <p>OpenAI is required for scanning and extraction. Add an Anthropic key to also scan Claude. Both stay local in <code style="font-family:'JetBrains Mono',monospace;font-size:.8em;color:var(--text-2)">~/.rankthebot/config.json</code> — never sent anywhere.</p>
+          <div class="cmd"><span class="prompt">$</span> rankthebot auth connect --openai<br /><span class="prompt">$</span> rankthebot auth connect --anthropic <span style="color:var(--muted)"># optional</span></div>
         </div>
 
         <div class="hiw-step">
@@ -1048,7 +1048,7 @@
     <div class="container">
       <p class="section-eyebrow">Quick start</p>
       <h2 class="section-title">Up and running in minutes</h2>
-      <p class="section-sub">Requires Python 3.9+ and an OpenAI or Anthropic API key. Works on Mac, Linux, and Windows (WSL).</p>
+      <p class="section-sub">Requires Python 3.9+ and an OpenAI API key. An Anthropic key is optional — only needed to scan Claude. Works on Mac, Linux, and Windows (WSL).</p>
 
       <div class="qs-layout">
         <div class="qs-steps">
@@ -1120,7 +1120,7 @@
             </div>
 
             <div class="terminal-panel" id="panel-3">
-              <div class="t-line"><span class="t-prompt">$</span><span class="t-cmd">rankthebot scan --models openai,anthropic</span></div>
+              <div class="t-line"><span class="t-prompt">$</span><span class="t-cmd">rankthebot scan --llms chatgpt,claude</span></div>
               <div class="t-line"><span class="t-out">Scanning 65 queries × 3 runs × 2 models = 390 total requests...</span></div>
               <div class="t-line"><span class="t-out">ChatGPT: GPT-4o · Claude: claude-sonnet-4-6</span></div>
               <div class="t-line" style="margin-bottom:16px"></div>
