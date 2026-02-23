@@ -3,15 +3,15 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>RanktheBot — Track Your Brand in AI Responses</title>
-  <meta name="description" content="RanktheBot is a free, open-source CLI that scans ChatGPT with hundreds of real queries, scores your brand's AI visibility 0–100, and benchmarks competitors. Runs locally — no data shared." />
+  <title>RanktheBot — AI Visibility Tracker for ChatGPT &amp; Claude</title>
+  <meta name="description" content="RanktheBot is a free, open-source AI visibility tracker that scans ChatGPT and Claude with hundreds of real queries, scores your brand 0–100, and benchmarks competitors. Runs locally — no data shared." />
   <meta name="author" content="Nikos Lamprakakis" />
   <meta name="robots" content="index, follow" />
 
   <link rel="canonical" href="https://rankthebot.com" />
 
-  <meta property="og:title" content="RanktheBot — Track Your Brand in AI Responses" />
-  <meta property="og:description" content="Scan ChatGPT queries, score your brand's AI visibility 0–100, and benchmark competitors. Free, open-source, runs locally." />
+  <meta property="og:title" content="RanktheBot — AI Visibility Tracker for ChatGPT &amp; Claude" />
+  <meta property="og:description" content="Scan ChatGPT and Claude queries, score your brand's AI visibility 0–100, and benchmark competitors. Free, open-source, runs locally." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://rankthebot.com" />
   <meta property="og:site_name" content="RanktheBot" />
@@ -20,8 +20,8 @@
   <meta property="og:image:height" content="630" />
 
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="RanktheBot — Track Your Brand in AI Responses" />
-  <meta name="twitter:description" content="Scan ChatGPT queries, score your brand's AI visibility 0–100, and benchmark competitors. Free and open-source." />
+  <meta name="twitter:title" content="RanktheBot — AI Visibility Tracker for ChatGPT &amp; Claude" />
+  <meta name="twitter:description" content="Scan ChatGPT and Claude queries, score your brand's AI visibility 0–100, and benchmark competitors. Free and open-source." />
   <meta name="twitter:image" content="https://rankthebot.com/og-image.png" />
 
   <!-- Favicon: refined chat bubble logo -->
@@ -914,7 +914,7 @@
     <div class="container">
       <div class="badge">
         <span class="badge-dot"></span>
-        Open Source · MIT License · v0.1
+        Open Source · MIT License · Now with Claude
       </div>
 
       <h1>
@@ -923,7 +923,7 @@
       </h1>
 
       <p class="hero-sub">
-        RanktheBot scans ChatGPT with hundreds of real queries, scores your brand's visibility 0–100, and shows you exactly how you stack up against competitors — from your terminal.
+        The open-source AI visibility tracker that scans ChatGPT and Claude with hundreds of real queries, scores your brand 0–100, and shows you exactly how you stack up against competitors — from your terminal.
       </p>
 
       <div class="install-block">
@@ -958,8 +958,8 @@
           <div class="stat-label">Queries per scan</div>
         </div>
         <div class="stat-item">
-          <div class="stat-value">~$1</div>
-          <div class="stat-label">Cost per full scan</div>
+          <div class="stat-value">2</div>
+          <div class="stat-label">AI models — ChatGPT &amp; Claude</div>
         </div>
         <div class="stat-item">
           <div class="stat-value">100%</div>
@@ -974,15 +974,15 @@
     <div class="container">
       <p class="section-eyebrow">How it works</p>
       <h2 class="section-title">Three commands to your<br />AI visibility score</h2>
-      <p class="section-sub">RanktheBot handles query expansion, multi-run scanning, and weighted scoring automatically. You just read the results.</p>
+      <p class="section-sub">RanktheBot handles query expansion, multi-model scanning across ChatGPT and Claude, and weighted scoring automatically. You just read the results.</p>
 
       <div class="hiw-grid">
         <div class="hiw-step">
           <div class="step-number">Step 01</div>
           <div class="step-icon">🔑</div>
           <h3>Connect your API key</h3>
-          <p>Authenticate with your OpenAI key. It stays local in <code style="font-family:'JetBrains Mono',monospace;font-size:.8em;color:var(--text-2)">~/.rankthebot/config.json</code> — never sent anywhere else.</p>
-          <div class="cmd"><span class="prompt">$</span> rankthebot auth connect --openai</div>
+          <p>Authenticate with your OpenAI or Anthropic key. Keys stay local in <code style="font-family:'JetBrains Mono',monospace;font-size:.8em;color:var(--text-2)">~/.rankthebot/config.json</code> — never sent anywhere else.</p>
+          <div class="cmd"><span class="prompt">$</span> rankthebot auth connect --openai<br /><span class="prompt">$</span> rankthebot auth connect --anthropic</div>
         </div>
 
         <div class="hiw-step">
@@ -997,7 +997,7 @@
           <div class="step-number">Step 03</div>
           <div class="step-icon">📊</div>
           <h3>Scan & get your score</h3>
-          <p>Runs 3× per query to account for LLM variability, extracts brand mentions with position and sentiment, and produces a 0–100 score.</p>
+          <p>Runs 3× per query across ChatGPT and Claude to account for LLM variability, extracts brand mentions with position and sentiment, and produces a 0–100 score.</p>
           <div class="cmd"><span class="prompt">$</span> rankthebot report visibility --brand "acme"</div>
         </div>
       </div>
@@ -1007,23 +1007,23 @@
   <!-- ─── FEATURES ─── -->
   <section class="features-bg">
     <div class="container">
-      <p class="section-eyebrow">Features</p>
+      <p class="section-eyebrow">AI Visibility Tracker Features</p>
       <h2 class="section-title">Everything you need to<br />track AI search presence</h2>
-      <p class="section-sub">Built for marketers, SEOs, and growth teams who need to understand the AI search landscape before their competitors do.</p>
+      <p class="section-sub">Built for marketers, SEOs, and growth teams who need to understand how their brand shows up across ChatGPT, Claude, and the AI search landscape.</p>
 
       <div class="features-grid">
         <div class="feature-card">
           <div class="feature-icon">🧠</div>
           <h3>Smart query expansion</h3>
-          <p>Turn a single keyword into 65+ real-world ChatGPT queries. RanktheBot simulates how actual buyers phrase questions — across industries, roles, and intents — so you see the full picture, not just one angle.</p>
-          <span class="feature-tag">GPT-4o powered</span>
+          <p>Turn a single keyword into 65+ real-world queries. RanktheBot simulates how actual buyers phrase questions — across industries, roles, and intents — so you see the full picture, not just one angle.</p>
+          <span class="feature-tag">GPT-4o · Claude powered</span>
         </div>
 
         <div class="feature-card">
-          <div class="feature-icon">🔄</div>
-          <h3>Multi-run scanning</h3>
-          <p>AI responses are non-deterministic. Running each query 3 times and averaging results gives you a statistically reliable visibility score — not a fluke snapshot that changes on the next refresh.</p>
-          <span class="feature-tag">3× per query</span>
+          <div class="feature-icon">🤖</div>
+          <h3>Multi-model scanning</h3>
+          <p>Run queries across both ChatGPT and Claude to see how your brand appears in each AI. Different models have different training data — your visibility can vary significantly between them.</p>
+          <span class="feature-tag">ChatGPT &amp; Claude</span>
         </div>
 
         <div class="feature-card">
@@ -1048,7 +1048,7 @@
     <div class="container">
       <p class="section-eyebrow">Quick start</p>
       <h2 class="section-title">Up and running in minutes</h2>
-      <p class="section-sub">Requires Python 3.9+ and an OpenAI API key. Works on Mac, Linux, and Windows (WSL).</p>
+      <p class="section-sub">Requires Python 3.9+ and an OpenAI or Anthropic API key. Works on Mac, Linux, and Windows (WSL).</p>
 
       <div class="qs-layout">
         <div class="qs-steps">
@@ -1058,7 +1058,7 @@
           </button>
           <button class="qs-step-btn" onclick="showPanel(1)" data-step="1">
             <span class="qs-step-num">2</span>
-            Connect your API key
+            Connect your API keys
           </button>
           <button class="qs-step-btn" onclick="showPanel(2)" data-step="2">
             <span class="qs-step-num">3</span>
@@ -1099,10 +1099,12 @@
               <div class="t-line"><span class="t-prompt">$</span><span class="t-cmd">rankthebot auth connect --openai</span></div>
               <div class="t-line"><span class="t-out">Enter your OpenAI API key:</span></div>
               <div class="t-line"><span class="t-cmd">sk-••••••••••••••••••••••••••••••••</span></div>
-              <div class="t-line" style="margin-bottom:16px"></div>
-              <div class="t-line"><span class="t-success">✓ API key saved to ~/.rankthebot/config.json</span></div>
-              <div class="t-line"><span class="t-success">✓ Connection verified — GPT-4o is reachable.</span></div>
-              <div class="t-line" style="margin-top:12px"><span class="t-comment"># Key stored locally — never committed to git</span></div>
+              <div class="t-line" style="margin-bottom:16px"><span class="t-success">✓ Connection verified — GPT-4o is reachable.</span></div>
+              <div class="t-line"><span class="t-prompt">$</span><span class="t-cmd">rankthebot auth connect --anthropic</span></div>
+              <div class="t-line"><span class="t-out">Enter your Anthropic API key:</span></div>
+              <div class="t-line"><span class="t-cmd">sk-ant-••••••••••••••••••••••••••••</span></div>
+              <div class="t-line" style="margin-bottom:8px"><span class="t-success">✓ Connection verified — Claude is reachable.</span></div>
+              <div class="t-line"><span class="t-comment"># Keys stored locally — never committed to git</span></div>
             </div>
 
             <div class="terminal-panel" id="panel-2">
@@ -1118,14 +1120,13 @@
             </div>
 
             <div class="terminal-panel" id="panel-3">
-              <div class="t-line"><span class="t-prompt">$</span><span class="t-cmd">rankthebot scan</span></div>
-              <div class="t-line"><span class="t-out">Scanning 65 queries × 3 runs = 195 total requests...</span></div>
-              <div class="t-line"><span class="t-out">Using GPT-4o for responses, GPT-4o-mini for extraction.</span></div>
+              <div class="t-line"><span class="t-prompt">$</span><span class="t-cmd">rankthebot scan --models openai,anthropic</span></div>
+              <div class="t-line"><span class="t-out">Scanning 65 queries × 3 runs × 2 models = 390 total requests...</span></div>
+              <div class="t-line"><span class="t-out">ChatGPT: GPT-4o · Claude: claude-sonnet-4-6</span></div>
               <div class="t-line" style="margin-bottom:16px"></div>
               <div class="t-line"><span class="t-out">&nbsp;[██████████████████░░░░░] 78% — query 51/65</span></div>
               <div class="t-line" style="margin-bottom:16px"></div>
-              <div class="t-line"><span class="t-success">✓ Scan complete. Estimated cost: $1.12</span></div>
-              <div class="t-line"><span class="t-success">✓ Results stored in local SQLite database.</span></div>
+              <div class="t-line"><span class="t-success">✓ Scan complete. Results stored in local SQLite database.</span></div>
             </div>
 
             <div class="terminal-panel" id="panel-4">
@@ -1152,7 +1153,7 @@
         <div>
           <p class="nl-eyebrow">Stay in the loop</p>
           <h2 class="nl-title">AI search is moving fast.<br />Don't fall behind.</h2>
-          <p class="nl-sub">Get monthly updates on RanktheBot releases, AI visibility benchmarks, and practical tips to improve how your brand appears in ChatGPT responses.</p>
+          <p class="nl-sub">Get monthly updates on RanktheBot releases, AI visibility benchmarks, and practical tips to improve how your brand appears in ChatGPT and Claude responses.</p>
         </div>
         <div>
           <!--
@@ -1191,7 +1192,7 @@
   <section class="cta-section">
     <div class="container">
       <div class="cta-box">
-        <h2>Start tracking your<br /><em>AI visibility today</em></h2>
+        <h2>The AI visibility tracker<br /><em>your competitors don't use yet</em></h2>
         <p>Free, open-source, and runs entirely on your machine.<br />Your API key and data never leave your computer.</p>
         <div class="cta-btns">
           <a href="https://github.com/nikkos/rankthebot" target="_blank" rel="noopener" class="btn-primary btn-large">
